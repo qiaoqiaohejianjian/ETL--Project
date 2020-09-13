@@ -10,21 +10,7 @@ s3_client = boto3.client('s3')
 
 def lambda_handler(event, context):
     print("lambda function invoked")
-    '''
-    event: {'Records': [{'eventVersion': '2.1', 'eventSource': 'aws:s3', 'awsRegion': 'ap-southeast-2', 
-                         'eventTime': '2020-09-11T02:37:28.109Z', 'eventName': 'ObjectCreated:CompleteMultipartUpload',
-                         'userIdentity': {'principalId': 'AWS:AIDAUUEVCR2O6TB3PUVXM'}, 
-                         'requestParameters': {'sourceIPAddress': '149.167.62.199'}, 
-                         'responseElements': {'x-amz-request-id': '81D3FE02751363EB', 'x-amz-id-2': 'm+ojIBoOdyKLvmfoss+TKIh90kBgQPlhMpH2y2SjnMLnUI2P49a4zmk08SCAy547NUliPl+ZxiRzJGqY3feWxYrCa3Xy+Ll2'}, 
-                         's3': {'s3SchemaVersion': '1.0', 'configurationId': 'DEproject_raw_data', 
-                                'bucket': {'name': 'project4de', 'ownerIdentity': {'principalId': 'A2SIV9NUJL3L0L'}, 'arn': 'arn:aws:s3:::project4de'},
-                                'object': {'key': 'rawData/video_data.csv', 'size': 171490024, 'eTag': 'a5a367b9bbc2fd32f8adc07384aa1823-10', 'sequencer': '005F5AE284314061F8'}
-                                }
-                         }
-                        ]
-            }
-
-    '''
+    
     for record in event['Records']:
         #bucket name is simple due to restriction of AWS S3
         bucket = record['s3']['bucket']['name']
