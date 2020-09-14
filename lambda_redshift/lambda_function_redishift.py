@@ -88,7 +88,7 @@ def handler(event, context):
 	PLATFORM_SKEY NUMBER( 38,0),\
 	SITE_SKEY NUMBER( 38,0),\
 	TITLE_SKEY NUMBER( 38,0),\
-    DB_INSERT_TIME STAMP TIMESTAMP (6);",
+    DB_INSERT_TIMESTAMP TIMESTAMP (6);",
 
     "COPY time_dlt ('DateTime', 'year', 'month', 'day', 'hour', 'minute')\
     FROM 's3://project4de/processed/dim_time.csv'\
