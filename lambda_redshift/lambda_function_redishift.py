@@ -44,7 +44,7 @@ def handler(event, context):
     c = conn.cursor()
     
     queries = ["CREATE TABLE IF NOT EXISTS time_dlt(\
-	DateTime DATETIME;",
+	'DateTime' DATETIME;",
     
     "CREATE TABLE IF NOT EXISTS title_dlt(\
 	title varchar(200));",
@@ -57,7 +57,7 @@ def handler(event, context):
     #2017-01-11T00:00   strptime(x,'%Y-%m-%dT%H:%M')
     "CREATE TABLE IF NOT EXISTS DIMDATE(\
 	DATETIME_SKEY NUMBER( 38,0) not null identity(0,1),\
-	DATETIME DATETIME,\
+	'DATETIME' DATETIME,\
 	YEAR smallint,\
 	MONTH smallint,\
 	DAY smallint,\
@@ -77,7 +77,7 @@ def handler(event, context):
 	PLATFORM varchar(20));",
 
     "CREATE TABLE IF NOT EXISTS staging(\
-	DATETIME DATETIME,\
+	'DATETIME' DATETIME,\
 	TITLE varchar(200),\
 	PLATFORM varchar(20),\
 	SITE varchar(10));",
