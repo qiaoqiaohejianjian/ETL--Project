@@ -1,5 +1,3 @@
-
-# to be continued
 import psycopg2
 import os
 import sys
@@ -11,7 +9,6 @@ rds_username = os.environ.get('user')
 rds_user_pwd = os.environ.get('password')
 rds_db_name = os.environ.get('database')
 rds_db_port = os.environ.get('port')
-
 
 
 logger = logging.getLogger()
@@ -46,116 +43,120 @@ def handler(event, context):
         
     c = conn.cursor()
     
-    queries = ["""
-    CREATE TABLE IF NOT EXISTS time(
-	timeid int not null identity(0,1),
-	DateTime char(16),
-	year smallint,
-	month smallint,
-	day smallint,
-	hour smallint,
-	minute smallint);
-    """,
+    queries = ["CREATE TABLE IF NOT EXISTS time_dlt(\
+	DateTime DATETIME;",
     
-    """
-    CREATE TABLE IF NOT EXISTS title(
-	titleid int not null identity(0,1),
-	title varchar(200));
-    """,
+    "CREATE TABLE IF NOT EXISTS title_dlt(\
+	title varchar(200));",
     
-    """
-    CREATE TABLE IF NOT EXISTS site(
-	siteid int not null identity(0,1),
-	site varchar(10));
-    """,
+    "CREATE TABLE IF NOT EXISTS site_dlt(\
+	site varchar(10));",
     
-    """
-    CREATE TABLE IF NOT EXISTS platform(
-	platformid int not null identity(0,1),
-	platform varchar(20));
-    """, 
+    "CREATE TABLE IF NOT EXISTS platform_dlt(\
+	platform varchar(20));", 
+    #2017-01-11T00:00   strptime(x,'%Y-%m-%dT%H:%M')
+    "CREATE TABLE IF NOT EXISTS DIMDATE(\
+	DATETIME_SKEY NUMBER( 38,0) not null identity(0,1),\
+	DATETIME DATETIME,\
+	YEAR smallint,\
+	MONTH smallint,\
+	DAY smallint,\
+	HOUR smallint,\
+	MINU smallint);",
     
-    """
-    CREATE TABLE IF NOT EXISTS staging(
-	factid int not null identity(0,1),
-	DateTime char(16) not null,
-	title varchar(200) not null,
-	platform varchar(20) not null,
-	site varchar(10) not null);
-    """,
+    "CREATE TABLE IF NOT EXISTS DIMTITLE(\
+	TITLE_SKEY NUMBER( 38,0) not null identity(0,1),\
+	TITLE varchar(200));",
     
-    """
-    CREATE TABLE IF NOT EXISTS fact(
-	factid int not null identity(0,1),
-	timeid int not null,
-	titleid int not null,
-	siteid int not null,
-	platformid int not null);
-    """,
+    "CREATE TABLE IF NOT EXISTS DIMSITE(\
+	SITE_SKEY NUMBER( 38,0) not null identity(0,1),\
+	SITE varchar(10));",
+    
+    "CREATE TABLE IF NOT EXISTS DIMPLATFORM(\
+	PLATFORM_SKEY NUMBER( 38,0) not null identity(0,1),\
+	PLATFORM varchar(20));",
 
-    """
-    COPY time ("DateTime", "year", "month", "day", "hour", "minute")
-    FROM 's3://project4de/processed/dim_time.csv'
-    credentials 'aws_iam_role=arn:aws:iam::318140223133:role/redshiftRole' 
-    CSV
-    IGNOREHEADER 1;
-    """,
+    "CREATE TABLE IF NOT EXISTS staging(\
+	DATETIME char(16),\
+	TITLE varchar(200),\
+	PLATFORM varchar(20),\
+	SITE varchar(10));",
     
-    """
-    COPY site ("site")
-    FROM 's3://project4de/processed/dim_site.csv'
-    credentials 'aws_iam_role=arn:aws:iam::318140223133:role/redshiftRole' 
-    CSV
-    IGNOREHEADER 1;
-    """,
+    "CREATE TABLE IF NOT EXISTS FACTVIDEOSTART(\
+	factid NUMBER( 38,0) not null identity(0,1),\
+	DATETIME_SKEY NUMBER( 38,0),\
+	PLATFORM_SKEY NUMBER( 38,0),\
+	SITE_SKEY NUMBER( 38,0),\
+	TITLE_SKEY NUMBER( 38,0),\
+    DB_INSERT_TIME STAMP TIMESTAMP (6);",
+
+    "COPY time_dlt ('DateTime', 'year', 'month', 'day', 'hour', 'minute')\
+    FROM 's3://project4de/processed/dim_time.csv'\
+    credentials 'aws_iam_role=arn:aws:iam::318140223133:role/redshiftRole'\
+    CSV\
+    IGNOREHEADER 1;",
     
-    """
-    COPY title ("title")
-    FROM 's3://project4de/processed/dim_title.csv'
-    credentials 'aws_iam_role=arn:aws:iam::318140223133:role/redshiftRole' 
-    CSV
-    IGNOREHEADER 1;
-    """,
+    "COPY site_dlt ('site')\
+    FROM 's3://project4de/processed/dim_site.csv'\
+    credentials 'aws_iam_role=arn:aws:iam::318140223133:role/redshiftRole'\
+    CSV\
+    IGNOREHEADER 1;",
     
-    """
-    COPY platform ("platform")
-    FROM 's3://project4de/processed/dim_platform.csv'
-    credentials 'aws_iam_role=arn:aws:iam::318140223133:role/redshiftRole' 
-    CSV
-    IGNOREHEADER 1;
-    """,
+    "COPY title_dlt ('title')\
+    FROM 's3://project4de/processed/dim_title.csv'\
+    credentials 'aws_iam_role=arn:aws:iam::318140223133:role/redshiftRole'\
+    CSV\
+    IGNOREHEADER 1;",
     
-    """COPY staging ("DateTime", "title", "platform", "site")
-    FROM 's3://project4de/processed/fact.csv'
-    credentials 'aws_iam_role=arn:aws:iam::318140223133:role/redshiftRole' 
-    CSV
-    IGNOREHEADER 1;
-    """,
+    "COPY platform_dlt ('platform')\
+    FROM 's3://project4de/processed/dim_platform.csv'\
+    credentials 'aws_iam_role=arn:aws:iam::318140223133:role/redshiftRole'\
+    CSV\
+    IGNOREHEADER 1;",
     
-    """
-    delete from time where timeid > (select min(timeid) from time a where time.datetime = a.datetime);
-    delete from site where siteid > (select min(siteid) from site a where site.site = a.site);
-    delete from title where titleid > (select min(titleid) from title a where title.title = a.title);
-    delete from platform where platformid > (select min(platformid) from platform a where platform.platform = a.platform);
-    """,
+    "COPY staging ('DATETIME', 'TITLE', 'PLATFORM', 'SITE')\
+    FROM 's3://project4de/processed/fact_dlt.csv'\
+    credentials 'aws_iam_role=arn:aws:iam::318140223133:role/redshiftRole'\
+    CSV\
+    IGNOREHEADER 1;",
+
+    "insert into DIMDATE ('DATETIME','YEAR','MONTH','DAY','HOUR','MINU')\
+    select t.DateTime, YEAR(t.DateTime) as 'YEAR', MONTH(t.DateTime) as 'MONTH',\
+    DAY(t.DateTime) as 'DAY', t.DateTime.strftime(%H) as 'HOUR', \
+    t.DateTime.strftime(%M) as 'MINU'\
+    from time_dlt t left join DIMDATE d on t.DateTime = d.DATETIME\
+    where d.DATETIME is null;",
     
-    """
-    insert into FACTVIDEOSTART (timeid, titleid, siteid, platformid)
-    select a.timeid, b.titleid, c.siteid, d.platformid
-    from staging e
-    left join DIMTIME a 
-    on e.DateTime = a.DateTime
-    left join DIMTITLE b 
-    on e.title = b.title
-    left join DIMSITE c 
-    on e.site = e.site
-    left join DIMPLATFORM d 
-    on e.platform = d.platform;
-    """,
+    "insert into DIMSITE(SITE)\
+    select t.SITE from site_dlt t left join DIMSITE d on t.SITE = d.SITE\
+    where d.SITE is null;",
+
+    "insert into DIMTITLE(TITLE)\
+    select t.TITLE from title_dlt t left join DIMTITLE d on t.TITLE = d.TITLE\
+    where d.TITLE is null;",
+
+    "insert into DIMDIMPLATFORM(DIMPLATFORM)\
+    select t.DIMPLATFORM from platform_dlt t left join DIMDIMPLATFORM d\
+    on t.DIMPLATFORM = d.DIMPLATFORM\
+    where d.DIMPLATFORM is null;",
+
+    "insert into FACTVIDEOSTART (DATETIME_SKEY, TITLE_SKEY, SITE_SKEY, PLATFORM_SKEY)\
+    select a.DATETIME_SKEY, b.TITLE_SKEY, c.SITE_SKEY, d.PLATFORM_SKEY\
+    from staging e\
+    left join DIMDATE a \
+    on e.DATETIME = a.DATETIME\
+    left join DIMTITLE b\
+    on e.TITLE = b.TITLE\
+    left join DIMSITE c\
+    on e.SITE = e.SITE\
+    left join DIMPLATFORM d\
+    on e.PLATFORM = d.PLATFORM;",
     
-    """
-    TRUNCATE staging;
-    """
+   " TRUNCATE staging; ",
+   " TRUNCATE time_dlt; ",
+   " TRUNCATE site_dlt; ",
+   " TRUNCATE title_dlt; ",
+   " TRUNCATE platform_dlt; "
     ]
     for query in queries:
         print("===============")
