@@ -91,12 +91,12 @@ def data_process(file):
     processed.drop(columns = ['VideoTitle'],inplace=True)
     processed.drop(columns = ['events'],inplace=True)
 
-    fact = processed
+    fact_dlt = processed
     del processed
 
     #data auditing: find max len of all field in fact
-    for col in fact.columns:
-        print(f"{col} max len is {max([len(i) for i in fact[col] if i])}")
+    for col in fact_dlt.columns:
+        print(f"{col} max len is {max([len(i) for i in fact_dlt[col] if i])}")
 
     # return dim_time,dim_site,dim_platform,dim_title,processed
     #output processed data to csv file
@@ -104,5 +104,5 @@ def data_process(file):
     dim_site.to_csv('/tmp/dim_site.csv',line_terminator='\n',escapechar='\\',index=False)
     dim_title.to_csv('/tmp/dim_title.csv',line_terminator='\n',escapechar='\\',index=False)
     dim_platform.to_csv('/tmp/dim_platform.csv',line_terminator='\n',escapechar='\\',index=False)
-    fact.to_csv('/tmp/fact.csv',line_terminator='\n',escapechar='\\',index=False)
-    return ["dim_time","dim_site","dim_title","dim_platform","fact"]
+    fact_dlt.to_csv('/tmp/fact.csv',line_terminator='\n',escapechar='\\',index=False)
+    return ["dim_time","dim_site","dim_title","dim_platform","fact_dlt"]
