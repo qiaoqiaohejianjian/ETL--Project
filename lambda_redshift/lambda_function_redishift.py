@@ -18,8 +18,8 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 try:
-    conn_string = f"host={rds_host} user={rds_username} \
-    password={rds_user_pwd} dbname={rds_db_name} port={rds_db_port}"
+    conn_string = f"host={rds_host}, user={rds_username}, \
+    password={rds_user_pwd}, database={rds_db_name}, port={rds_db_port}"
     conn = psycopg2.connect(conn_string)
 except:
     logger.error("ERROR: Could not connect to Postgres instance.")
@@ -30,7 +30,7 @@ logger.info("SUCCESS: Connection to RDS Postgres instance succeeded")
 
 def handler(event, context):
     s3 = boto3.resource('s3')
-    my_bucket = s3.Bucket('jr-demo')
+    my_bucket = s3.Bucket('project4de')
     file_set = set()
     file_list = ["processed/dim_platform.csv",
                 "processed/dim_site.csv",
@@ -66,13 +66,13 @@ def handler(event, context):
     """
     CREATE TABLE IF NOT EXISTS site(
 	siteid int not null identity(0,1),
-	site varchar(200));
+	site varchar(10));
     """,
     
     """
     CREATE TABLE IF NOT EXISTS platform(
 	platformid int not null identity(0,1),
-	platform varchar(50));
+	platform varchar(20));
     """, 
     
     """
@@ -80,8 +80,8 @@ def handler(event, context):
 	factid int not null identity(0,1),
 	DateTime char(16) not null,
 	title varchar(200) not null,
-	platform varchar(50) not null,
-	site varchar(200) not null);
+	platform varchar(20) not null,
+	site varchar(10) not null);
     """,
     
     """
@@ -95,39 +95,39 @@ def handler(event, context):
 
     """
     COPY time ("DateTime", "year", "month", "day", "hour", "minute")
-    FROM 's3://jr-demo/processed/dim_time.csv'
-    credentials 'aws_iam_role=arn:aws:iam::405872514987:role/jr_dw' 
+    FROM 's3://project4de/processed/dim_time.csv'
+    credentials 'aws_iam_role=arn:aws:iam::318140223133:role/redshiftRole' 
     CSV
     IGNOREHEADER 1;
     """,
     
     """
     COPY site ("site")
-    FROM 's3://jr-demo/processed/dim_site.csv'
-    credentials 'aws_iam_role=arn:aws:iam::405872514987:role/jr_dw' 
+    FROM 's3://project4de/processed/dim_site.csv'
+    credentials 'aws_iam_role=arn:aws:iam::318140223133:role/redshiftRole' 
     CSV
     IGNOREHEADER 1;
     """,
     
     """
     COPY title ("title")
-    FROM 's3://jr-demo/processed/dim_title.csv'
-    credentials 'aws_iam_role=arn:aws:iam::405872514987:role/jr_dw' 
+    FROM 's3://project4de/processed/dim_title.csv'
+    credentials 'aws_iam_role=arn:aws:iam::318140223133:role/redshiftRole' 
     CSV
     IGNOREHEADER 1;
     """,
     
     """
     COPY platform ("platform")
-    FROM 's3://jr-demo/processed/dim_platform.csv'
-    credentials 'aws_iam_role=arn:aws:iam::405872514987:role/jr_dw' 
+    FROM 's3://project4de/processed/dim_platform.csv'
+    credentials 'aws_iam_role=arn:aws:iam::318140223133:role/redshiftRole' 
     CSV
     IGNOREHEADER 1;
     """,
     
     """COPY staging ("DateTime", "title", "platform", "site")
-    FROM 's3://jr-demo/processed/fact.csv'
-    credentials 'aws_iam_role=arn:aws:iam::405872514987:role/jr_dw' 
+    FROM 's3://project4de/processed/fact.csv'
+    credentials 'aws_iam_role=arn:aws:iam::318140223133:role/redshiftRole' 
     CSV
     IGNOREHEADER 1;
     """,
@@ -140,16 +140,16 @@ def handler(event, context):
     """,
     
     """
-    insert into fact (timeid, titleid, siteid, platformid)
+    insert into FACTVIDEOSTART (timeid, titleid, siteid, platformid)
     select a.timeid, b.titleid, c.siteid, d.platformid
     from staging e
-    left join time a 
+    left join DIMTIME a 
     on e.DateTime = a.DateTime
-    left join title b 
+    left join DIMTITLE b 
     on e.title = b.title
-    left join site c 
+    left join DIMSITE c 
     on e.site = e.site
-    left join platform d 
+    left join DIMPLATFORM d 
     on e.platform = d.platform;
     """,
     
