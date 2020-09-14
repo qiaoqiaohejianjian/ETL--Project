@@ -77,7 +77,7 @@ def handler(event, context):
 	PLATFORM varchar(20));",
 
     "CREATE TABLE IF NOT EXISTS staging(\
-	DATETIME char(16),\
+	DATETIME DATETIME,\
 	TITLE varchar(200),\
 	PLATFORM varchar(20),\
 	SITE varchar(10));",
