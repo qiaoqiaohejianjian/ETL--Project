@@ -51,7 +51,7 @@ def lambda_handler(event, context):
     c = conn.cursor()
     
     queries = ["CREATE TABLE IF NOT EXISTS time_dlt(\
-	'DateTime' DATETIME;",
+	'DateTime' DATETIME);",
     
     "CREATE TABLE IF NOT EXISTS title_dlt(\
 	title varchar(200));",
@@ -95,7 +95,7 @@ def lambda_handler(event, context):
 	PLATFORM_SKEY NUMBER( 38,0),\
 	SITE_SKEY NUMBER( 38,0),\
 	TITLE_SKEY NUMBER( 38,0),\
-    DB_INSERT_TIMESTAMP TIMESTAMP (6) not null DEFAULT NOW();",
+    DB_INSERT_TIMESTAMP TIMESTAMP (6) not null DEFAULT NOW());",
 
     "COPY time_dlt ('DateTime', 'year', 'month', 'day', 'hour', 'minute')\
     FROM 's3://project4de/processed/dim_time.csv'\
