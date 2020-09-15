@@ -4,42 +4,49 @@ import sys
 import boto3
 import logging
 
-rds_host  = os.environ.get('host')
-rds_username = os.environ.get('user')
-rds_user_pwd = os.environ.get('password')
-rds_db_name = os.environ.get('database')
-rds_db_port = os.environ.get('port')
+s3_client = boto3.resource('s3')  
 
+def lambda_handler(event, context):
+    print("lambda function invoked")
+    print('event:',event)
+    rds_host  = os.environ.get('host')
+    rds_username = os.environ.get('dbuser')
+    rds_user_pwd = os.environ.get('dbpassword')
+    rds_db_name = os.environ.get('dbname')
+    rds_db_port = os.environ.get('dbport')
 
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
+    logger = logging.getLogger()
+    logger.setLevel(logging.INFO)
 
-try:
-    conn_string = f"host={rds_host}, user={rds_username}, \
-    password={rds_user_pwd}, database={rds_db_name}, port={rds_db_port}"
-    conn = psycopg2.connect(conn_string)
-except:
-    logger.error("ERROR: Could not connect to Postgres instance.")
-    sys.exit()
+    files_set = set()
+    for buc in s3_client.buckets.all():   
+        for obj in buc.objects.filter(Prefix='processed/'):
+            files_set.add(obj.key)
 
-logger.info("SUCCESS: Connection to RDS Postgres instance succeeded")
+    print("files in processed folder now:", files_set)
 
-
-def handler(event, context):
-    s3 = boto3.resource('s3')
-    my_bucket = s3.Bucket('project4de')
-    file_set = set()
     file_list = ["processed/dim_platform.csv",
                 "processed/dim_site.csv",
                 "processed/dim_time.csv",
                 "processed/dim_title.csv",
                 "processed/fact.csv"]
-    for i in my_bucket.objects.filter(Prefix='processed/'):
-        file_set.add(i.key)
-        
-    if any(file not in file_set for file in file_list):
+
+    if any(file not in files_set for file in file_list):
         print("not all file exist")
         sys.exit()
+    print('yes!!!!!!')
+
+    try:
+        conn = psycopg2.connect(user = rds_username,
+                               password = rds_user_pwd,
+                               host = rds_host,
+                               port = rds_db_port,
+                               database = rds_db_name)
+    except Exception as e:
+        logger.error(e)
+        sys.exit()
+
+    logger.info("SUCCESS: Connection to RDS Postgres instance succeeded")
         
     c = conn.cursor()
     
