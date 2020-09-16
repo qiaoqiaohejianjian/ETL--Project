@@ -50,52 +50,50 @@ def lambda_handler(event, context):
         
     c = conn.cursor()
     
-    queries = ["CREATE TABLE IF NOT EXISTS time_dlt(\
-	'DateTime' DATETIME);",
+    queries = [
+        '''CREATE TABLE IF NOT EXISTS "time_dlt" (
+                "DATETIME" VARCHAR2(20 BYTE) NOT NULL),
+                "YEAR" smallint,
+                "MONTH" smallint,
+                "DAY" smallint,
+                "HOUR" smallint,
+                "MINU" smallint );''',
     
-    "CREATE TABLE IF NOT EXISTS title_dlt(\
-	title varchar(200));",
+    '''CREATE TABLE IF NOT EXISTS "title_dlt" ("title" VARCHAR2(200 BYTE) NOT NULL);''',
     
-    "CREATE TABLE IF NOT EXISTS site_dlt(\
-	site varchar(10));",
+    '''CREATE TABLE IF NOT EXISTS "site_dlt" ("site" VARCHAR2(10 BYTE) NOT NULL);''',
     
-    "CREATE TABLE IF NOT EXISTS platform_dlt(\
-	platform varchar(20));", 
-    #2017-01-11T00:00   strptime(x,'%Y-%m-%dT%H:%M')
-    "CREATE TABLE IF NOT EXISTS DIMDATE(\
-	DATETIME_SKEY NUMBER( 38,0) not null identity(0,1),\
-	'DATETIME' DATETIME,\
-	YEAR smallint,\
-	MONTH smallint,\
-	DAY smallint,\
-	HOUR smallint,\
-	MINU smallint);",
-    
-    "CREATE TABLE IF NOT EXISTS DIMTITLE(\
-	TITLE_SKEY NUMBER( 38,0) not null identity(0,1),\
-	TITLE varchar(200));",
-    
-    "CREATE TABLE IF NOT EXISTS DIMSITE(\
-	SITE_SKEY NUMBER( 38,0) not null identity(0,1),\
-	SITE varchar(10));",
-    
-    "CREATE TABLE IF NOT EXISTS DIMPLATFORM(\
-	PLATFORM_SKEY NUMBER( 38,0) not null identity(0,1),\
-	PLATFORM varchar(20));",
+    '''CREATE TABLE IF NOT EXISTS platform_dlt("platform" VARCHAR2(20 BYTE) NOT NULL);''', 
 
-    "CREATE TABLE IF NOT EXISTS staging(\
-	'DATETIME' DATETIME,\
-	TITLE varchar(200),\
-	PLATFORM varchar(20),\
-	SITE varchar(10));",
+    '''CREATE TABLE IF NOT EXISTS "DIMDATE" (
+	"DATETIME_SKEY" int not null identity(0,1),
+	"DATETIME"  VARCHAR2(12 BYTE) NOT NULL);''',
     
-    "CREATE TABLE IF NOT EXISTS FACTVIDEOSTART(\
-	factid NUMBER( 38,0) not null identity(0,1),\
-	DATETIME_SKEY NUMBER( 38,0),\
-	PLATFORM_SKEY NUMBER( 38,0),\
-	SITE_SKEY NUMBER( 38,0),\
-	TITLE_SKEY NUMBER( 38,0),\
-    DB_INSERT_TIMESTAMP TIMESTAMP (6) not null DEFAULT NOW());",
+    '''CREATE TABLE IF NOT EXISTS "DIMTITLE" (
+	"TITLE_SKEY" int not null identity(0,1),
+	"TITLE" VARCHAR2(200 BYTE) NOT NULL);''',
+
+    '''CREATE TABLE IF NOT EXISTS "DIMSITE"(
+	"SITE_SKEY" int not null identity(0,1),
+	"SITE" VARCHAR2(10 BYTE) NOT NULL);''',
+    
+    '''CREATE TABLE IF NOT EXISTS "DIMPLATFORM" (
+	"PLATFORM_SKEY" int not null identity(0,1),
+	"PLATFORM" VARCHAR2(20 BYTE) NOT NULL);''',
+
+    '''CREATE TABLE IF NOT EXISTS "staging" (
+	"DATETIME" DATETIME NOT NULL,
+	"TITLE" VARCHAR2(200 BYTE) NOT NULL,
+	"PLATFORM" VARCHAR2(20 BYTE) NOT NULL,
+	"SITE" VARCHAR2(10 BYTE) NOT NULL);''',
+    
+    '''CREATE TABLE IF NOT EXISTS "FACTVIDEOSTART" (
+	"factid" int not null identity(0,1),
+	"DATETIME_SKEY" int NOT NULL,
+	"PLATFORM_SKEY" int NOT NULL,
+	"SITE_SKEY" int NOT NULL,
+	"TITLE_SKEY" int NOT NULL,
+    "DB_INSERT_TIMESTAMP" TIMESTAMP (6) not null DEFAULT NOW());''',
 
     "COPY time_dlt ('DateTime', 'year', 'month', 'day', 'hour', 'minute')\
     FROM 's3://project4de/processed/dim_time.csv'\
@@ -127,22 +125,20 @@ def lambda_handler(event, context):
     CSV\
     IGNOREHEADER 1;",
 
-    "insert into DIMDATE ('DATETIME','YEAR','MONTH','DAY','HOUR','MINU')\
-    select t.DateTime, YEAR(t.DateTime) as 'YEAR', MONTH(t.DateTime) as 'MONTH',\
-    DAY(t.DateTime) as 'DAY', t.DateTime.strftime(%H) as 'HOUR', \
-    t.DateTime.strftime(%M) as 'MINU'\
+    "insert into DIMDATE (DATETIME)\
+    select t.DateTime\
     from time_dlt t left join DIMDATE d on t.DateTime = d.DATETIME\
     where d.DATETIME is null;",
     
-    "insert into DIMSITE(SITE)\
+    "insert into DIMSITE (SITE)\
     select t.SITE from site_dlt t left join DIMSITE d on t.SITE = d.SITE\
     where d.SITE is null;",
 
-    "insert into DIMTITLE(TITLE)\
+    "insert into DIMTITLE (TITLE)\
     select t.TITLE from title_dlt t left join DIMTITLE d on t.TITLE = d.TITLE\
     where d.TITLE is null;",
 
-    "insert into DIMDIMPLATFORM(DIMPLATFORM)\
+    "insert into DIMDIMPLATFORM (DIMPLATFORM)\
     select t.DIMPLATFORM from platform_dlt t left join DIMDIMPLATFORM d\
     on t.DIMPLATFORM = d.DIMPLATFORM\
     where d.DIMPLATFORM is null;",
@@ -164,7 +160,8 @@ def lambda_handler(event, context):
    " TRUNCATE site_dlt; ",
    " TRUNCATE title_dlt; ",
    " TRUNCATE platform_dlt; "
-    ]
+   ]
+
     for query in queries:
         print("===============")
         print(query)
