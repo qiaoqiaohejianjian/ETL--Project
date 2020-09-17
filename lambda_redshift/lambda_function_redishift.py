@@ -157,10 +157,9 @@ def lambda_handler(event, context):
     left join DIMTITLE b\
     on e.TITLE = b.TITLE\
     left join DIMSITE c\
-    on e.SITE = e.SITE\
+    on e.SITE = c.SITE\
     left join DIMPLATFORM d\
-    on e.PLATFORM = d.PLATFORM\
-    order by FACTVIDEOSTART.factid;",
+    on e.PLATFORM = d.PLATFORM;",
     
    " TRUNCATE staging; ",
    " TRUNCATE time_dlt; ",
