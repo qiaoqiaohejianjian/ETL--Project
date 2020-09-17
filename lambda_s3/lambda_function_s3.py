@@ -1,3 +1,7 @@
+#!/usr/bin/env python3.6
+# -*- coding: utf-8 -*-
+# @author: sophieSUN
+
 import boto3
 from datetime import datetime
 import pandas as pd
@@ -36,6 +40,11 @@ def lambda_handler(event, context):
 def data_process(file):
     def datetimeObj(x):
         return datetime.strptime(x,'%Y-%m-%dT%H:%M')
+    
+    def date_format(x):
+        xTime = datetime.strptime(x,'%Y-%m-%dT%H:%M')
+        xstring = xTime.strftime('%Y%m%d%H%M')
+        return datetime.strptime(xstring,'%Y%m%d%H%M')
 
     def like_platform(x):
         titles = x.split('|')[0]
@@ -75,6 +84,7 @@ def data_process(file):
     dim_time.loc[:,'day'] = dim_time['DateTime'].apply(lambda x: datetimeObj(x).day)
     dim_time.loc[:,'hour'] = dim_time['DateTime'].apply(lambda x: datetimeObj(x).hour)
     dim_time.loc[:,'minute'] = dim_time['DateTime'].apply(lambda x: datetimeObj(x).minute)
+    dim_time.loc[:,'DateTime'] = dim_time.loc[:,'DateTime'].apply(lambda x: date_format(x))
 
     #convert video titles to title
     processed.loc[:,'title'] = processed['VideoTitle'].apply(lambda x: x.split('|')[-1])
