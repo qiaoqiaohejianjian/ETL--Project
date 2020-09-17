@@ -115,4 +115,4 @@ def data_process(file):
     dim_title.to_csv('/tmp/dim_title.csv',line_terminator='\n',escapechar='\\',index=False)
     dim_platform.to_csv('/tmp/dim_platform.csv',line_terminator='\n',escapechar='\\',index=False)
     fact_dlt.to_csv('/tmp/fact.csv',line_terminator='\n',escapechar='\\',index=False)
-    return ["dim_time","dim_site","dim_title","dim_platform","fact_dlt"]
+    return ["dim_time","dim_site","dim_title","dim_platform","fact"]
