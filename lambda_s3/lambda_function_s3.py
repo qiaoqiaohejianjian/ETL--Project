@@ -85,6 +85,7 @@ def data_process(file):
     dim_time.loc[:,'hour'] = dim_time['DateTime'].apply(lambda x: datetimeObj(x).hour)
     dim_time.loc[:,'minute'] = dim_time['DateTime'].apply(lambda x: datetimeObj(x).minute)
     dim_time.loc[:,'DateTime'] = dim_time.loc[:,'DateTime'].apply(lambda x: date_format(x))
+    processed.loc[:,'DateTime'] = processed.loc[:,'DateTime'].apply(lambda x: date_format(x))
 
     #convert video titles to title
     processed.loc[:,'title'] = processed['VideoTitle'].apply(lambda x: x.split('|')[-1])
