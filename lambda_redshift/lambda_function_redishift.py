@@ -1,3 +1,7 @@
+#!/usr/bin/env python3.6
+# -*- coding: utf-8 -*-
+# @author: sophieSUN
+
 import psycopg2
 import os
 import sys
