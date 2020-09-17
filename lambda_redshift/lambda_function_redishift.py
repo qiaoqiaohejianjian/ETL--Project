@@ -50,42 +50,42 @@ def lambda_handler(event, context):
         
     c = conn.cursor()
     
-    queries = [
+queries = [
         '''CREATE TABLE IF NOT EXISTS "time_dlt" (
-                "DATETIME" VARCHAR2(20 BYTE) NOT NULL),
-                "YEAR" smallint,
-                "MONTH" smallint,
-                "DAY" smallint,
-                "HOUR" smallint,
-                "MINU" smallint );''',
+                "Datetime" VARCHAR(20) NOT NULL,
+                "year" smallint,
+                "month" smallint,
+                "day" smallint,
+                "hour" smallint,
+                "minute" smallint );''',
     
-    '''CREATE TABLE IF NOT EXISTS "title_dlt" ("title" VARCHAR2(200 BYTE) NOT NULL);''',
+    '''CREATE TABLE IF NOT EXISTS "title_dlt" ("title" VARCHAR(200) NOT NULL);''',
     
-    '''CREATE TABLE IF NOT EXISTS "site_dlt" ("site" VARCHAR2(10 BYTE) NOT NULL);''',
+    '''CREATE TABLE IF NOT EXISTS "site_dlt" ("site" VARCHAR(10) NOT NULL);''',
     
-    '''CREATE TABLE IF NOT EXISTS platform_dlt("platform" VARCHAR2(20 BYTE) NOT NULL);''', 
+    '''CREATE TABLE IF NOT EXISTS platform_dlt("platform" VARCHAR(20) NOT NULL);''', 
 
     '''CREATE TABLE IF NOT EXISTS "DIMDATE" (
 	"DATETIME_SKEY" int not null identity(0,1),
-	"DATETIME"  VARCHAR2(12 BYTE) NOT NULL);''',
+	"DATETIME"  VARCHAR(20) NOT NULL);''',
     
     '''CREATE TABLE IF NOT EXISTS "DIMTITLE" (
 	"TITLE_SKEY" int not null identity(0,1),
-	"TITLE" VARCHAR2(200 BYTE) NOT NULL);''',
+	"TITLE" VARCHAR(200) NOT NULL);''',
 
     '''CREATE TABLE IF NOT EXISTS "DIMSITE"(
 	"SITE_SKEY" int not null identity(0,1),
-	"SITE" VARCHAR2(10 BYTE) NOT NULL);''',
+	"SITE" VARCHAR(10) NOT NULL);''',
     
     '''CREATE TABLE IF NOT EXISTS "DIMPLATFORM" (
 	"PLATFORM_SKEY" int not null identity(0,1),
-	"PLATFORM" VARCHAR2(20 BYTE) NOT NULL);''',
+	"PLATFORM" VARCHAR(20) NOT NULL);''',
 
     '''CREATE TABLE IF NOT EXISTS "staging" (
-	"DATETIME" DATETIME NOT NULL,
-	"TITLE" VARCHAR2(200 BYTE) NOT NULL,
-	"PLATFORM" VARCHAR2(20 BYTE) NOT NULL,
-	"SITE" VARCHAR2(10 BYTE) NOT NULL);''',
+	"DATETIME" VARCHAR(20) NOT NULL,
+	"TITLE" VARCHAR(200) NOT NULL,
+	"PLATFORM" VARCHAR(20) NOT NULL,
+	"SITE" VARCHAR(10) NOT NULL);''',
     
     '''CREATE TABLE IF NOT EXISTS "FACTVIDEOSTART" (
 	"factid" int not null identity(0,1),
@@ -93,42 +93,42 @@ def lambda_handler(event, context):
 	"PLATFORM_SKEY" int NOT NULL,
 	"SITE_SKEY" int NOT NULL,
 	"TITLE_SKEY" int NOT NULL,
-    "DB_INSERT_TIMESTAMP" TIMESTAMP (6) not null DEFAULT NOW());''',
+    "DB_INSERT_TIMESTAMP" TIMESTAMP not null DEFAULT NOW());''',
 
-    "COPY time_dlt ('DateTime', 'year', 'month', 'day', 'hour', 'minute')\
+    '''COPY time_dlt ("DateTime", "year", "month", "day", "hour", "minute")\
     FROM 's3://project4de/processed/dim_time.csv'\
     credentials 'aws_iam_role=arn:aws:iam::318140223133:role/redshiftRole'\
     CSV\
-    IGNOREHEADER 1;",
+    IGNOREHEADER 1;''',
     
-    "COPY site_dlt ('site')\
+    '''COPY site_dlt ("site")\
     FROM 's3://project4de/processed/dim_site.csv'\
     credentials 'aws_iam_role=arn:aws:iam::318140223133:role/redshiftRole'\
     CSV\
-    IGNOREHEADER 1;",
+    IGNOREHEADER 1;''',
     
-    "COPY title_dlt ('title')\
+    '''COPY title_dlt ("title")\
     FROM 's3://project4de/processed/dim_title.csv'\
     credentials 'aws_iam_role=arn:aws:iam::318140223133:role/redshiftRole'\
     CSV\
-    IGNOREHEADER 1;",
+    IGNOREHEADER 1;''',
     
-    "COPY platform_dlt ('platform')\
+    '''COPY platform_dlt ("platform")\
     FROM 's3://project4de/processed/dim_platform.csv'\
     credentials 'aws_iam_role=arn:aws:iam::318140223133:role/redshiftRole'\
     CSV\
-    IGNOREHEADER 1;",
+    IGNOREHEADER 1;''',
     
-    "COPY staging ('DATETIME', 'TITLE', 'PLATFORM', 'SITE')\
+    '''COPY staging ("DATETIME", "TITLE", "PLATFORM", "SITE")\
     FROM 's3://project4de/processed/fact_dlt.csv'\
     credentials 'aws_iam_role=arn:aws:iam::318140223133:role/redshiftRole'\
     CSV\
-    IGNOREHEADER 1;",
+    IGNOREHEADER 1;''',
 
-    "insert into DIMDATE (DATETIME)\
+    '''insert into DIMDATE ("DATETIME")\
     select t.DateTime\
     from time_dlt t left join DIMDATE d on t.DateTime = d.DATETIME\
-    where d.DATETIME is null;",
+    where d.DATETIME is null;''',
     
     "insert into DIMSITE (SITE)\
     select t.SITE from site_dlt t left join DIMSITE d on t.SITE = d.SITE\
