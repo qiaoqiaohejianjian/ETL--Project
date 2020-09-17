@@ -31,10 +31,11 @@ def lambda_handler(event, context):
                 "processed/dim_title.csv",
                 "processed/fact.csv"]
 
+
     if any(file not in files_set for file in file_list):
         print("not all file exist")
         sys.exit()
-    print('yes!!!!!!')
+    #print('yes!!!!!!')
 
     try:
         conn = psycopg2.connect(user = rds_username,
@@ -47,10 +48,9 @@ def lambda_handler(event, context):
         sys.exit()
 
     logger.info("SUCCESS: Connection to RDS Postgres instance succeeded")
-        
     c = conn.cursor()
     
-queries = [
+    queries = [
         '''CREATE TABLE IF NOT EXISTS "time_dlt" (
                 "Datetime" VARCHAR(20) NOT NULL,
                 "year" smallint,
@@ -120,7 +120,7 @@ queries = [
     IGNOREHEADER 1;''',
     
     '''COPY staging ("DATETIME", "TITLE", "PLATFORM", "SITE")\
-    FROM 's3://project4de/processed/fact_dlt.csv'\
+    FROM 's3://project4de/processed/fact.csv'\
     credentials 'aws_iam_role=arn:aws:iam::318140223133:role/redshiftRole'\
     CSV\
     IGNOREHEADER 1;''',
@@ -138,10 +138,10 @@ queries = [
     select t.TITLE from title_dlt t left join DIMTITLE d on t.TITLE = d.TITLE\
     where d.TITLE is null;",
 
-    "insert into DIMDIMPLATFORM (DIMPLATFORM)\
-    select t.DIMPLATFORM from platform_dlt t left join DIMDIMPLATFORM d\
-    on t.DIMPLATFORM = d.DIMPLATFORM\
-    where d.DIMPLATFORM is null;",
+    "insert into DIMPLATFORM (PLATFORM)\
+    select t.PLATFORM from platform_dlt t left join DIMPLATFORM d\
+    on t.PLATFORM = d.PLATFORM\
+    where d.PLATFORM is null;",
 
     "insert into FACTVIDEOSTART (DATETIME_SKEY, TITLE_SKEY, SITE_SKEY, PLATFORM_SKEY)\
     select a.DATETIME_SKEY, b.TITLE_SKEY, c.SITE_SKEY, d.PLATFORM_SKEY\
