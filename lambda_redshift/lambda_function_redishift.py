@@ -31,7 +31,6 @@ def lambda_handler(event, context):
                 "processed/dim_title.csv",
                 "processed/fact.csv"]
 
-
     if any(file not in files_set for file in file_list):
         print("not all file exist")
         sys.exit()
@@ -92,8 +91,7 @@ def lambda_handler(event, context):
 	"DATETIME_SKEY" int NOT NULL,
 	"PLATFORM_SKEY" int NOT NULL,
 	"SITE_SKEY" int NOT NULL,
-	"TITLE_SKEY" int NOT NULL,
-    "DB_INSERT_TIMESTAMP" TIMESTAMP not null DEFAULT NOW());''',
+	"TITLE_SKEY" int NOT NULL);''',
 
     '''COPY time_dlt ("DateTime", "year", "month", "day", "hour", "minute")\
     FROM 's3://project4de/processed/dim_time.csv'\
@@ -128,20 +126,24 @@ def lambda_handler(event, context):
     '''insert into DIMDATE ("DATETIME")\
     select t.DateTime\
     from time_dlt t left join DIMDATE d on t.DateTime = d.DATETIME\
-    where d.DATETIME is null;''',
+    where d.DATETIME is null
+    order by d.DATETIME_SKEY;''',
     
     "insert into DIMSITE (SITE)\
     select t.SITE from site_dlt t left join DIMSITE d on t.SITE = d.SITE\
-    where d.SITE is null;",
+    where d.SITE is null\
+    order by d.SITE_SKEY;",
 
     "insert into DIMTITLE (TITLE)\
     select t.TITLE from title_dlt t left join DIMTITLE d on t.TITLE = d.TITLE\
-    where d.TITLE is null;",
+    where d.TITLE is null\
+    order by d.TITLE_SKEY;",
 
     "insert into DIMPLATFORM (PLATFORM)\
     select t.PLATFORM from platform_dlt t left join DIMPLATFORM d\
     on t.PLATFORM = d.PLATFORM\
-    where d.PLATFORM is null;",
+    where d.PLATFORM is null\
+    order by d.PLATFORM_SKEY;",
 
     "insert into FACTVIDEOSTART (DATETIME_SKEY, TITLE_SKEY, SITE_SKEY, PLATFORM_SKEY)\
     select a.DATETIME_SKEY, b.TITLE_SKEY, c.SITE_SKEY, d.PLATFORM_SKEY\
@@ -153,7 +155,8 @@ def lambda_handler(event, context):
     left join DIMSITE c\
     on e.SITE = e.SITE\
     left join DIMPLATFORM d\
-    on e.PLATFORM = d.PLATFORM;",
+    on e.PLATFORM = d.PLATFORM\
+    order by FACTVIDEOSTART.factid;",
     
    " TRUNCATE staging; ",
    " TRUNCATE time_dlt; ",
