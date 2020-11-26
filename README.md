@@ -7,6 +7,7 @@ Amazon Web Service redshift<br/>
 <br/>
 project description:<br/>
 Use raw data to construct a star schema Data Warehouse which will be used to track videos over time
+ETL Project Description.docx is the detail requirement document.
 <br/>
 <br/>
 project design:<br/>
