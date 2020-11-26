@@ -11,5 +11,5 @@ ETL Project Description.docx is the detail requirement document.
 <br/>
 <br/>
 project design:<br/>
-once raw data was uploaded to S3, processed data will be loaded into tables in reshift. <br/>
+upload raw data into S3, then process and load data into reshift. <br/>
 Please find detailed process in summary.pdf<br/>
