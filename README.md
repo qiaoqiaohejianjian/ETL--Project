@@ -7,6 +7,7 @@ ETL Project Description.docx is the detail requirement document.<br/>
 project objectives:<br/>
 design a star schema data warehouse<br/>
 build automate ETL data pipeline <br/>
+<br/>
 Find detailed process in summary.pdf<br/>
 <br/>
 components included:<br/>
