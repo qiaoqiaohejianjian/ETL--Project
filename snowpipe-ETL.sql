@@ -2,6 +2,7 @@ use role sysadmin;
 drop database DATALAKE_DEMO;
 create database DATALAKE_DEMO;
 create schema DEV;
+-- create source table
 create or replace table DATALAKE_DEMO.DEV.SRC_CREDIT
 (
   customer_id Text,
@@ -69,7 +70,7 @@ CREATE OR REPLACE VIEW DATALAKE_DEMO.DEV.VW_SRC_CREDIT AS
   from DATALAKE_DEMO.DEV.SRC_CREDIT
 );
 
--- define staging table
+-- define staging table which is destination table
 REATE OR REPLACE TABLE DATALAKE_DEMO.DEV.CREDIT
 (
   customer_id Text,
