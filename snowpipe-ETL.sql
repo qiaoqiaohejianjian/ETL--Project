@@ -24,7 +24,7 @@ create or replace file format DATALAKE_DEMO.DEV.FORMAT_SRC_CREDIT
 
 -- 1. Create an external s3 stage:
 create or replace stage DATALAKE_DEMO.DEV.STAGE_SRC_CREDIT
-url='s3://snowflake-datalake-demo/credit_data/'
+url='s3://your bucket name/'
 credentials=(AWS_KEY_ID='XXXXX' AWS_SECRET_KEY='XXXX')
 ENCRYPTION=(TYPE = 'AWS_SSE_S3')
 ;
