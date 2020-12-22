@@ -58,27 +58,25 @@ ls @DATALAKE_DEMO.DEV.STAGE_SRC_CREDIT;
 select * from DATALAKE_DEMO.DEV.SRC_CREDIT;
 
 -- create view to parse source data
+--  only keep video_events contain 206 and discard title.split('|').count=1
 CREATE OR REPLACE VIEW DATALAKE_DEMO.DEV.VW_SRC_CREDIT AS
 (
-  select distinct
-  CUSTOMER_ID,
-  CONCAT((split_part(DATETIME, ' ', 0)||' '||split_part(DATETIME, ' ', 2)))::datetime AS DATETIME,
-  ATTD::FLOAT8 AS ATTD,
-  CREDIT_SCORE,
-  STATE_ID,
-  TYPE
+  select *
   from DATALAKE_DEMO.DEV.SRC_CREDIT
+  where events like '%206,%'  
+  or events like '%,206,%'
+  or events like '%,206%'
+  and (length(video_title)-length(replace(video_title,'|',''))+1)>1;
 );
+
+
 
 -- define staging table which is destination table
 REATE OR REPLACE TABLE DATALAKE_DEMO.DEV.CREDIT
 (
-  customer_id Text,
-  datetime datetime,
-  attd Float8,
-  credit_score Text,
-  state_id Text,
-  type Text
+  datetime Text,
+  video_title Text,
+  events Text
 );
 
 -- stream on source table
@@ -97,15 +95,12 @@ when system$stream_has_data('DATALAKE_DEMO.DEV.STREAM_SRC_CREDIT')
 AS
 MERGE INTO DATALAKE_DEMO.DEV.CREDIT dest
   USING DATALAKE_DEMO.DEV.VW_SRC_CREDIT src 
-  on src.customer_id = dest.customer_id
-  and src.datetime = dest.datetime
-  and src.attd = dest.attd
-  and src.credit_score = dest.credit_score
-  and src.state_id = dest.state_id
-  and src.type = dest.type
+  on src.datetime = dest.datetime
+  and src.events = dest.events
+  and src.video_title = dest.video_title
   WHEN not matched 
     then insert (  
-      customer_id, datetime, attd, credit_score, state_id, type)
+      datetime, video_title, events)
     values (  
-      src.customer_id, src.datetime, src.attd, src.credit_score, src.state_id, src.type);
+      src.datetime, src.video_title, src.events);
 ALTER TASK DATALAKE_DEMO.DEV.MERGE_CREDIT RESUME;
