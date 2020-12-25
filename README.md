@@ -7,11 +7,13 @@ ETL Project Description.docx is the detail requirement document.<br/>
 project objectives:<br/>
 design a star schema data warehouse<br/>
 build automate ETL data pipeline <br/>
+1. load data to Redshift<br/>
+2. load data to Snowflake
 <br/>
 Find detailed process in summary.pdf<br/>
 <br/>
 components included:<br/>
-Amazon Web Service S3, lambda, redshift
+Amazon Web Service S3, lambda, redshift, Snowflake
 <br/>
 
 
