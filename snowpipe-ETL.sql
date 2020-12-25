@@ -5,12 +5,9 @@ create schema DEV;
 -- create source table
 create or replace table DATALAKE_DEMO.DEV.SRC_CREDIT
 (
-  customer_id Text,
-  datetime Text,
-  attd Text,
-  credit_score Text,
-  state_id Text,
-  type Text
+  datetime varchar(50),
+  video_title varchar(200),
+  events varchar(200)
 );
 
 ----------------------------------------------------DEV-------------------------------------------------
@@ -61,12 +58,17 @@ select * from DATALAKE_DEMO.DEV.SRC_CREDIT;
 --  only keep video_events contain 206 and discard title.split('|').count=1
 CREATE OR REPLACE VIEW DATALAKE_DEMO.DEV.VW_SRC_CREDIT AS
 (
-  select *
+  select to_timestamp(datetime) as datetime,
+  case when regexp_like(lower(trim(regexp_substr(videotitle, '[^|]+'))), 'iphone|android|ipad|app') then trim(regexp_substr(videotitle, '[^|]+'))
+  when regexp_like(lower(trim(regexp_substr(videotitle, '[^|]+'))), 'news') then 'Desktop'
+  else 'unknow'
+  end as 'platform',
+  case when regexp_like(lower(trim(regexp_substr(videotitle, '[^|]+'))), 'news') then trim(regexp_substr(videotitle, '[^|]+')))
+  else 'unkknow' end as 'site',
+  trim(regexp_substr(videotitle, '[^|]*$')) as 'video'                                                                                                 
   from DATALAKE_DEMO.DEV.SRC_CREDIT
-  where events like '%206,%'  
-  or events like '%,206,%'
-  or events like '%,206%'
-  and (length(video_title)-length(replace(video_title,'|',''))+1)>1;
+  where events like '%206%'
+  and regexp_count(videotitle,'\|') != 0;
 );
 
 
@@ -74,9 +76,10 @@ CREATE OR REPLACE VIEW DATALAKE_DEMO.DEV.VW_SRC_CREDIT AS
 -- define staging table which is destination table
 REATE OR REPLACE TABLE DATALAKE_DEMO.DEV.CREDIT
 (
-  datetime Text,
-  video_title Text,
-  events Text
+  datetime varchar(50),
+  platform varchar(200),
+  site varchar(200),
+  video varchar(200)
 );
 
 -- stream on source table
@@ -94,13 +97,13 @@ CREATE OR REPLACE task DATALAKE_DEMO.DEV.MERGE_CREDIT
 when system$stream_has_data('DATALAKE_DEMO.DEV.STREAM_SRC_CREDIT')
 AS
 MERGE INTO DATALAKE_DEMO.DEV.CREDIT dest
-  USING DATALAKE_DEMO.DEV.VW_SRC_CREDIT src 
-  on src.datetime = dest.datetime
-  and src.events = dest.events
-  and src.video_title = dest.video_title
+  USING DATALAKE_DEMO.DEV.VW_SRC_CREDIT vsrc 
+  on vsrc.datetime = dest.datetime
+  and vsrc.events = dest.events
+  and vsrc.video_title = dest.video_title
   WHEN not matched 
     then insert (  
-      datetime, video_title, events)
+      datetime, platform, site, video)
     values (  
-      src.datetime, src.video_title, src.events);
+      vsrc.datetime, vsrc.platform, vsrc.site, vsrc.video );
 ALTER TASK DATALAKE_DEMO.DEV.MERGE_CREDIT RESUME;
