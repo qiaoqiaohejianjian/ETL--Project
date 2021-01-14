@@ -54,27 +54,8 @@ ls @DATALAKE_DEMO.DEV.STAGE_SRC_CREDIT;
 -- 9. Wait for 10-15seconds and check the result: 
 select * from DATALAKE_DEMO.DEV.SRC_CREDIT;
 
--- create view to parse source data
---  only keep video_events contain 206 and discard title.split('|').count=1
-CREATE OR REPLACE VIEW DATALAKE_DEMO.DEV.VW_SRC_CREDIT AS
-(
-  select to_timestamp(datetime) as datetime,
-  case when regexp_like(lower(trim(regexp_substr(videotitle, '[^|]+'))), 'iphone|android|ipad|app') then trim(regexp_substr(videotitle, '[^|]+'))
-  when regexp_like(lower(trim(regexp_substr(videotitle, '[^|]+'))), 'news') then 'Desktop'
-  else 'unknow'
-  end as 'platform',
-  case when regexp_like(lower(trim(regexp_substr(videotitle, '[^|]+'))), 'news') then trim(regexp_substr(videotitle, '[^|]+')))
-  else 'unkknow' end as 'site',
-  trim(regexp_substr(videotitle, '[^|]*$')) as 'video'                                                                                                 
-  from DATALAKE_DEMO.DEV.SRC_CREDIT
-  where events like '%206%'
-  and regexp_count(videotitle,'\|') != 0;
-);
-
-
-
 -- define staging table which is destination table
-REATE OR REPLACE TABLE DATALAKE_DEMO.DEV.CREDIT
+CREATE OR REPLACE TABLE DATALAKE_DEMO.DEV.CREDIT
 (
   datetime varchar(50),
   platform varchar(200),
@@ -90,11 +71,30 @@ use role accountadmin;
 grant execute task on account to role SYSADMIN;
 use ROLE SYSADMIN;
 
--- define task to MERGE_CREDIT
-CREATE OR REPLACE task DATALAKE_DEMO.DEV.MERGE_CREDIT 
+-- create task to parse source data
+--  only keep video_events contain 206 and discard title.split('|').count=1
+CREATE OR REPLACE task DATALAKE_DEMO.DEV.VW_SRC_CREDIT 
   warehouse = TEST_WH
   schedule = '60 minute' 
 when system$stream_has_data('DATALAKE_DEMO.DEV.STREAM_SRC_CREDIT')
+AS
+(
+  select to_timestamp(datetime) as datetime,
+  case when regexp_like(lower(trim(regexp_substr(videotitle, '[^|]+'))), 'iphone|android|ipad|app') then trim(regexp_substr(videotitle, '[^|]+'))
+  when regexp_like(lower(trim(regexp_substr(videotitle, '[^|]+'))), 'news') then 'Desktop'
+  else 'unknow'
+  end as 'platform',
+  case when regexp_like(lower(trim(regexp_substr(videotitle, '[^|]+'))), 'news') then trim(regexp_substr(videotitle, '[^|]+')))
+  else 'unkknow' end as 'site',
+  trim(regexp_substr(videotitle, '[^|]*$')) as 'video'                                                                                                 
+  from DATALAKE_DEMO.DEV.SRC_CREDIT
+  where events like '%206%'
+  and regexp_count(videotitle,'\|') != 0;
+);
+
+-- define task to MERGE_CREDIT
+CREATE OR REPLACE task DATALAKE_DEMO.DEV.MERGE_CREDIT 
+  after "DATALAKE_DEMO.DEV.VW_SRC_CREDIT"
 AS
 MERGE INTO DATALAKE_DEMO.DEV.CREDIT dest
   USING DATALAKE_DEMO.DEV.VW_SRC_CREDIT vsrc 
